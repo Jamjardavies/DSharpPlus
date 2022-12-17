@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace DSharpPlus.SlashCommands
 {
@@ -41,6 +41,8 @@ namespace DSharpPlus.SlashCommands
         /// <summary>
         /// Whether this module should be initiated at startup.
         /// </summary>
-        Singleton
+        Singleton,
+
+        Instance
     }
 }

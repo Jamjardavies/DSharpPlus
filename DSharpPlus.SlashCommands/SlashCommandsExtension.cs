@@ -34,6 +34,7 @@ namespace DSharpPlus.SlashCommands
 
         //Singleton modules
         private static List<object> _singletonModules { get; set; } = new();
+        private static List<object> _instancedModules { get; set; } = new();
 
         //List of modules to register
         private List<KeyValuePair<ulong?, Type>> _updateList { get; set; } = new();
@@ -116,6 +117,14 @@ namespace DSharpPlus.SlashCommands
 
             foreach (var xt in types)
                 this.RegisterCommands(xt, guildId);
+        }
+
+        public void RegisterCommands<T>(T commands, ulong? guildId = null)
+            where T : ApplicationCommandModule
+        {
+            _instancedModules.Add(commands);
+
+            this.RegisterCommands(commands.GetType(), guildId);
         }
 
         //To be run on ready
@@ -751,6 +760,7 @@ namespace DSharpPlus.SlashCommands
                 SlashModuleLifespan.Transient => method.IsStatic ? ActivatorUtilities.CreateInstance(this._configuration?.Services, method.DeclaringType) : this.CreateInstance(method.DeclaringType, this._configuration?.Services),
                 // If singleton, gets it from the singleton list
                 SlashModuleLifespan.Singleton => _singletonModules.First(x => ReferenceEquals(x.GetType(), method.DeclaringType)),
+                SlashModuleLifespan.Instance => _instancedModules.First(x => ReferenceEquals(x.GetType(), method.DeclaringType)),
                 // TODO: Use a more specific exception type
                 _ => throw new Exception($"An unknown {nameof(SlashModuleLifespanAttribute)} scope was specified on command {context.CommandName}"),
             };
